@@ -1,0 +1,13 @@
+{
+    "root_backup_dir": "C:\\save game",
+    "games": {
+        "seave 1": {
+            "source_path": "C:\\Users\\Aman\\Desktop\\Save File",
+            "backup_dir": "C:\\save game\\seave 1"
+        },
+        "save 2": {
+            "source_path": "C:\\Users\\Aman\\Desktop\\Save file 2",
+            "backup_dir": "C:\\save game\\save 2"
+        }
+    }
+}
