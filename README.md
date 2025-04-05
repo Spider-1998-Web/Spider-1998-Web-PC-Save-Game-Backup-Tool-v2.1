@@ -1,5 +1,9 @@
 # PC Save Game Backup Tool
 
+Version: 3.0
+Last Updated: 2025-04-06
+Author: Aman Raheem 
+
 ![Python Version](https://img.shields.io/badge/python-3.6%2B-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -24,7 +28,7 @@ A powerful CLI tool for managing PC game save backups with version control and a
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/PC-Save-Game-Backup-Tool.git
+git clone https://github.com/Spider-1998-Web/Spider-1998-Web-PC-Save-Game-Backup-Tool-v2.1.git
 
 # Navigate to the project directory
 cd PC-Save-Game-Backup-Tool
