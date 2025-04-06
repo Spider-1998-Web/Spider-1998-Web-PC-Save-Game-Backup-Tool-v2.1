@@ -1,46 +1,57 @@
 import os
-from datetime import datetime
+import webbrowser
 
 class BackupUI:
     def __init__(self, core):
         self.core = core
-        self.version = "3.0"
+        self.version = "4.1"
 
     def show_main_menu(self):
         """Display main menu interface"""
         while True:
-            print(f"\n=== Game Backup Manager v{self.version} ===")
-            print(f"Current Root: {self.core.config['root_backup_dir']}")
-            print("1. Create New Backup")
-            print("2. Update Existing Backup")
-            print("3. Restore Backup")
-            print("4. List All Games/Backups")
-            print("5. Change Root Directory")
-            print("6. Update All Game Backups")
-            print("7. Restore All Games")
-            print("8. Exit")
+            try:
+                current_root = self.core.config.get('root_backup_dir', 'Default Location')
+                print(f"\n=== Game Backup Manager v{self.version} ===")
+                print(f"Current Root: {current_root}")
+                print("1. Create New Backup")
+                print("2. Update Existing Backup")
+                print("3. Restore Backup")
+                print("4. List All Games/Backups")
+                print("5. Change Root Directory")
+                print("6. Update All Game Backups")
+                print("7. Restore All Games")
+                print("8. Search Save Locations Online")
+                print("9. Exit")
 
-            choice = input("\nEnter your choice (1-8): ").strip()
-            
-            if choice == '1':
-                self.create_backup_flow()
-            elif choice == '2':
-                self.update_backup_flow()
-            elif choice == '3':
-                self.restore_backup_flow()
-            elif choice == '4':
-                self.list_games_and_backups()
-            elif choice == '5':
-                self.change_root_directory()
-            elif choice == '6':
-                self.update_all_backups_flow()
-            elif choice == '7':
-                self.restore_all_backups_flow()
-            elif choice == '8':
-                print("\nGoodbye!")
-                return
-            else:
-                print("Invalid choice, please try again")
+                choice = input("\nEnter your choice (1-9): ").strip()
+                
+                if choice == '1':
+                    self.create_backup_flow()
+                elif choice == '2':
+                    self.update_backup_flow()
+                elif choice == '3':
+                    self.restore_backup_flow()
+                elif choice == '4':
+                    self.list_games_and_backups()
+                elif choice == '5':
+                    self.change_root_directory()
+                elif choice == '6':
+                    self.update_all_backups_flow()
+                elif choice == '7':
+                    self.restore_all_backups_flow()
+                elif choice == '8':
+                    self.search_save_locations_flow()
+                elif choice == '9':
+                    print("\nGoodbye!")
+                    return
+                else:
+                    print("Invalid choice, please try again")
+                    
+            except Exception as e:
+                print(f"\n💥 Unexpected error: {str(e)}")
+                print("Resetting configuration...")
+                self.core.config = self.core._load_config()
+                self.show_main_menu()
 
     def _get_valid_path(self, prompt):
         """Get validated path input"""
@@ -75,7 +86,15 @@ class BackupUI:
             print("Game already exists! Use Update Backup instead.")
             return
             
-        source_path = self._get_valid_path("Enter game save location: ")
+        if input("Search online for save location? (y/n): ").lower() == 'y':
+            found_path = self.search_save_locations_flow()
+            if found_path:
+                source_path = found_path
+            else:
+                source_path = self._get_valid_path("Enter game save location: ")
+        else:
+            source_path = self._get_valid_path("Enter game save location: ")
+        
         backup_dir = os.path.join(self.core.config['root_backup_dir'], game_name)
         
         self.core.config['games'][game_name] = {
@@ -207,3 +226,15 @@ class BackupUI:
                 print(f"{game}: {status} - {result['message']}")
         else:
             print("Operation canceled")
+
+    def search_save_locations_flow(self):
+        """Handle online save location search"""
+        print("\n=== Online Save Location Search ===")
+        game_name = input("Enter game name to search: ").strip()
+        
+        result = self.core.search_save_locations(game_name)
+        
+        print(f"\n🔍 Opening browser for {game_name} save locations...")
+        webbrowser.open(result['search_url'])
+        
+        return None

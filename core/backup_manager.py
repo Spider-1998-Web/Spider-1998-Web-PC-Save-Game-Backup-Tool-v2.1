@@ -1,10 +1,12 @@
 import os
 import shutil
 import json
+import urllib.parse
 from datetime import datetime
 
 CONFIG_FILE = "game_backup_config.json"
 DEFAULT_ROOT = r"C:\save game"
+SAVEGAME_PRO_URL = "https://savegame.pro/"
 
 class GameBackupCore:
     def __init__(self):
@@ -12,42 +14,54 @@ class GameBackupCore:
         self._ensure_root_structure()
 
     def _load_config(self):
-        """Load configuration with error handling"""
+        """Load configuration with robust error handling"""
         config_path = os.path.abspath(CONFIG_FILE)
-        
-        if not os.path.exists(config_path):
-            default_config = {
-                'root_backup_dir': DEFAULT_ROOT,
-                'games': {}
-            }
-            with open(config_path, 'w') as f:
-                json.dump(default_config, f, indent=4)
-            return default_config
+        default_config = {
+            'root_backup_dir': DEFAULT_ROOT,
+            'games': {}
+        }
 
         try:
+            if not os.path.exists(config_path):
+                self._create_new_config(config_path, default_config)
+                return default_config
+
             with open(config_path, 'r') as f:
                 if os.stat(config_path).st_size == 0:
-                    raise json.JSONDecodeError("Empty file", "", 0)
-                    
+                    raise json.JSONDecodeError("Empty config file", "", 0)
+
                 config = json.load(f)
-                
-                if 'root_backup_dir' not in config:
-                    config['root_backup_dir'] = DEFAULT_ROOT
-                    self._save_config()
-                    
-                return config
-        except (json.JSONDecodeError, KeyError) as e:
-            print(f"\n⚠️ Config file corrupted. Creating new one")
-            backup_path = f"{config_path}.bak"
-            shutil.copy(config_path, backup_path)
-            
-            default_config = {
-                'root_backup_dir': DEFAULT_ROOT,
-                'games': {}
-            }
-            with open(config_path, 'w') as f:
-                json.dump(default_config, f, indent=4)
-            return default_config
+                return self._validate_config(config, default_config)
+
+        except Exception as e:
+            print(f"⚠️ Config error: {str(e)} - Reinitializing")
+            return self._reinitialize_config(config_path, default_config)
+
+    def _create_new_config(self, path, default_config):
+        """Create new config file"""
+        with open(path, 'w') as f:
+            json.dump(default_config, f, indent=4)
+        return default_config
+
+    def _validate_config(self, config, default_config):
+        """Ensure required keys exist"""
+        if 'root_backup_dir' not in config:
+            config['root_backup_dir'] = default_config['root_backup_dir']
+        if 'games' not in config:
+            config['games'] = default_config['games']
+        return config
+
+    def _reinitialize_config(self, path, default_config):
+        """Handle config recovery"""
+        try:
+            backup_path = f"{path}.bak"
+            shutil.copy(path, backup_path)
+            print(f"💾 Original config backed up to {backup_path}")
+        except Exception as e:
+            print(f"⚠️ Config backup failed: {str(e)}")
+
+        self._create_new_config(path, default_config)
+        return default_config.copy()
 
     def _save_config(self):
         """Save configuration to file"""
@@ -112,6 +126,14 @@ class GameBackupCore:
                 })
         
         return sorted(backups, key=lambda x: x['timestamp'], reverse=True)
+
+    def search_save_locations(self, game_name):
+        """Generate proper search URL"""
+        encoded_query = urllib.parse.quote_plus(game_name)
+        return {
+            'search_url': f"{SAVEGAME_PRO_URL}?s={encoded_query}",
+            'game': game_name
+        }
 
     def update_all_backups(self):
         """Update backups for all configured games"""
