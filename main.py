@@ -1,15 +1,17 @@
 from core.backup_manager import GameBackupCore
 from ui.cli_interface import BackupUI
+from ui.gui_interface import BackupGUI
+import sys
 
 def main():
-    # Initialize core functionality
-    backup_core = GameBackupCore()
+    core = GameBackupCore()
     
-    # Initialize UI with core dependency
-    ui = BackupUI(backup_core)
-    
-    # Start the application
-    ui.show_main_menu()
+    if len(sys.argv) > 1 and sys.argv[1] == "--gui":
+        gui = BackupGUI(core)
+        gui.run()
+    else:
+        cli = BackupUI(core)
+        cli.show_main_menu()
 
 if __name__ == "__main__":
     main()

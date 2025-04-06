@@ -1,2 +1,2 @@
-# No external dependencies required
-# This project uses Python's standard library only
+# Project dependencies
+customtkinter>=5.2.0

@@ -86,14 +86,10 @@ class BackupUI:
             print("Game already exists! Use Update Backup instead.")
             return
             
-        if input("Search online for save location? (y/n): ").lower() == 'y':
-            found_path = self.search_save_locations_flow()
-            if found_path:
-                source_path = found_path
-            else:
-                source_path = self._get_valid_path("Enter game save location: ")
-        else:
-            source_path = self._get_valid_path("Enter game save location: ")
+        if input("Search online for save location first? (y/n): ").lower() == 'y':
+            self.search_save_locations_flow()
+            
+        source_path = self._get_valid_path("Enter game save location: ")
         
         backup_dir = os.path.join(self.core.config['root_backup_dir'], game_name)
         
@@ -237,4 +233,6 @@ class BackupUI:
         print(f"\n🔍 Opening browser for {game_name} save locations...")
         webbrowser.open(result['search_url'])
         
+        print("\nBrowser opened with search results.")
+        input("Press Enter to return to main menu...")
         return None
